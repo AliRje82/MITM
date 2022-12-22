@@ -11,6 +11,7 @@ bool help=true;
 bool exitwindowsreq=false;
 bool windowsclose=false;
 bool entering=true;
+bool CloseGame=false;
 //**********************
 
 //Screen Functions
@@ -21,18 +22,22 @@ void enter(){
 }
 void menu(){
     ClearBackground(WHITE);
-    DrawText("1.offline mode",450,200,50,BROWN);
+    DrawText("MEET IN THE MIDDLE",300,100,75,BROWN);
+    DrawText("1.Offline mode",450,300,50,BROWN);
+    DrawText("2.Online mode",450,350,50,BROWN);
+    DrawText("3.DevInfo",450,400,50,BROWN);
 
 }
 void Exit(){
     DrawRectangle(0,0,1280,800,WHITE);
-    DrawText("Are U Sure darling ?! Y/N",110,350,60,BLACK);
+    DrawText("Are U Sure Darling ?! Y/N",110,350,60,BLACK);
             
     if(IsKeyPressed(KEY_N)){
         exitwindowsreq=false; 
     } 
     else if(IsKeyPressed(KEY_Y)){
         windowsclose=true;
+        CloseGame=true;
     } 
 }
 void Help(int k){
@@ -58,11 +63,13 @@ void Help(int k){
         DrawText("2.Press KEY TO SHOW YOUR CHANCES CARD",100,200,20,WHITE);
         DrawText("3.CsadasdadOn your Mohre to move it",100,250,20,WHITE);
         DrawText("Press Enter to exit the Help Menu",100,350,30,WHITE);
+        help=false;
 
     }
 
 }
 void Closemenu(){
+    DrawRectangle(320,200,100,200,BLACK);
 
 }
 
@@ -71,8 +78,12 @@ void choose(int k){
     return enter();
     }else if(k==1){
     return menu();
-    }if(k>=2 && k<=4){
-        Help(k);
+    }else if(k>=2 && k<=4 && help){
+    return  Help(k);
+    }else if(k==5)
+    return //MultiPlayer();
+    else if(k==6){
+    return //Devinfo()
     }
 }
 //****************
@@ -102,6 +113,7 @@ int main()
     Sound boom=LoadSound("resources/entergame.wav");
 
     //******************************************************
+    
     while(!windowsclose){
         
 
@@ -113,6 +125,10 @@ int main()
         }
         if(IsKeyPressed(KEY_ONE) && k==1){ //safhe menu bazi
             k=2;
+        }else if(IsKeyPressed(KEY_TWO) && k==1){
+        //   k=5
+        }else if(IsKeyPressed(KEY_THREE) && k==1){
+        //    k=6
         }
         BeginDrawing();
         
@@ -121,12 +137,12 @@ int main()
 
         }else{
 
-            if(k==0 && entering){ // paksh seda vorodi
-                PlaySound(boom);
-                entering=false;
-            }
+        if(k==0 && entering){ // paksh seda vorodi
+            PlaySound(boom);
+            entering=false;
+        }
 
-            choose(k); // entekhab safhe namayesh
+        choose(k); // entekhab safhe namayesh
         }
         EndDrawing();
         }
@@ -135,5 +151,31 @@ int main()
         CloseAudioDevice();
         CloseWindow();
         //Shoro safhe bazi
+        if(!CloseGame){
+        //Flags*********************
+        bool exitwindowsreq=false;
+        bool windowsclose=false;
+        //**************************
+        InitWindow(screenWidth,screenHeight,"Meet in the middle");
+        //Sound Game************************
+        InitAudioDevice();
+        Sound game=LoadSound("resources/");
+        //**********************************
+        while(!windowsclose){
+        if(IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()){ //khoroj az safhe
+            exitwindowsreq=true;
+        }
+            BeginDrawing();
+            if(exitwindowsreq) //Menu Khoroji
+                Closemenu();
+            else{//Game Screen
+                ClearBackground(WHITE);
+
+                
+            }
+            EndDrawing();
+            
+        }
+    }
         
 }
