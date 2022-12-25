@@ -90,7 +90,7 @@ void choose(int k){
 
 //Game Functions
 const int dice_num = 1000;
-int dice[dice_num];
+int dice[1000];
 void Randomize(){
     srand((unsigned) time(NULL));
 }
@@ -124,14 +124,6 @@ int roll_dice() {
     int temp = dice[ran_num];
     dice[ran_num] = 0;
     return temp;
-    }
-}
-
-int main() {
-    dice_maker();
-    for(int i = 0; i < 100; i++) {
-        int k = roll_dice();
-        printf("%d\n", k);
     }
 }
 
