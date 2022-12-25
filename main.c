@@ -80,15 +80,60 @@ void choose(int k){
     return menu();
     }else if(k>=2 && k<=4 && help){
     return  Help(k);
-    }else if(k==5)
-    return //MultiPlayer();
+   }/* else if(k==5)
+    return MultiPlayer();
     else if(k==6){
-    return //Devinfo()
-    }
+    return Devinfo()
+    }*/
 }
 //****************
 
 //Game Functions
+const int dice_num = 1000;
+int dice[dice_num];
+void Randomize(){
+    srand((unsigned) time(NULL));
+}
+void dice_maker() {
+    int dic;
+    for(int i = 0; i < dice_num; i++) {
+        dic= rand() % 6;
+        switch (dic) {
+            case 0:
+                dice[i]=-1;
+                break;
+            case 4:
+                dice[i] = -2;
+                break;
+            case 5:
+                dice[i] = -3;
+                break;
+            default:
+                dice[i] = dic;
+                break;
+        }
+    }
+}
+
+int roll_dice() {
+    int ran_num = rand() % 1000;
+    if(dice[ran_num]==0) {
+     return roll_dice();
+    }
+    else{
+    int temp = dice[ran_num];
+    dice[ran_num] = 0;
+    return temp;
+    }
+}
+
+int main() {
+    dice_maker();
+    for(int i = 0; i < 100; i++) {
+        int k = roll_dice();
+        printf("%d\n", k);
+    }
+}
 
 //**************
 
