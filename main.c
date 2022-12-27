@@ -61,16 +61,24 @@ void Help(int k){
         DrawText("How to play the game",100,100,20,WHITE);
         DrawText("asdasdasdasd",100,150,20,WHITE);
         DrawText("2.Press KEY TO SHOW YOUR CHANCES CARD",100,200,20,WHITE);
-        DrawText("3.CsadasdadOn your Mohre to move it",100,250,20,WHITE);
+        DrawText("4.:/",100,250,20,WHITE);
         DrawText("Press Enter to exit the Help Menu",100,350,30,WHITE);
-        help=false;
 
     }
 
 }
 void Closemenu(){
-    DrawRectangle(320,200,100,200,BLACK);
+    DrawRectangle(250,250,500,500,BLACK);
+    DrawText("Press enter to back to menu",500,150,15,WHITE);
+    DrawText("Press SPACE to back to game",500,200,15,WHITE);
 
+}
+void Devinfo(){
+    ClearBackground(BLACK);
+    DrawText("DEV INFO",500,200,60,WHITE);
+    DrawText("1.AliRje:",350,300,25,WHITE);
+    DrawText("2.AmirrezaKH:",350,350,25,WHITE);
+    DrawText("Press esc to back to menu",500,500,15,WHITE);
 }
 
 void choose(int k){
@@ -80,17 +88,17 @@ void choose(int k){
     return menu();
     }else if(k>=2 && k<=4 && help){
     return  Help(k);
-   }/* else if(k==5)
+   }/* else if(k==7)
     return MultiPlayer();
-    else if(k==6){
-    return Devinfo()
-    }*/
+    */else if(k==6){
+    return Devinfo();
+    }
 }
 //****************
 
 //Game Functions
 const int dice_num = 1000;
-int dice[dice_num];
+int dice[1000];
 void Randomize(){
     srand((unsigned) time(NULL));
 }
@@ -127,13 +135,6 @@ int roll_dice() {
     }
 }
 
-int main() {
-    dice_maker();
-    for(int i = 0; i < 100; i++) {
-        int k = roll_dice();
-        printf("%d\n", k);
-    }
-}
 
 //**************
 
@@ -144,6 +145,11 @@ int main()
     const int screenWidth = 1280; 
     const int screenHeight = 800;
     int k=0; //Screen button;
+    //MUSIC*************
+    float musictime=1.0f;
+    bool pausemusic=false;
+    float volume=0.5f;
+    //******************
 
     InitWindow(screenWidth, screenHeight, "MEET IN THE MIDDLE");
     SetTargetFPS(60);
@@ -156,32 +162,51 @@ int main()
     //AUDIO*************************************************
     InitAudioDevice();
     Sound boom=LoadSound("resources/entergame.wav");
+    Music game=LoadMusicStream("resources/gamemusic.mp3");
 
     //******************************************************
     
     while(!windowsclose){
         
 
-        if(IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()){ //khoroj az safhe
+        if((IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()) && k!=6){ //khoroj az safhe
             exitwindowsreq=true;
         }
         if(IsKeyPressed(KEY_ENTER) && (k==0 || (k>=2 && k<=4))){ //rad shodan safhe hayi ke ba enter rad mishavand
+            if(k==4) help=false;
             k++;
+
         }
-        if(IsKeyPressed(KEY_ONE) && k==1){ //safhe menu bazi
-            k=2;
+        //MENU BAZI LOGIC
+        if(IsKeyPressed(KEY_ONE) && k==1){
+            if(help) k=2;
+            else    k=5;
         }else if(IsKeyPressed(KEY_TWO) && k==1){
-        //   k=5
+        //   k=7
         }else if(IsKeyPressed(KEY_THREE) && k==1){
-        //    k=6
+            k=6;
         }
+        //*****************************************
+        if(k==6){ //Dev info logic
+            if(IsKeyPressed(KEY_ESCAPE)) k=1;
+        }
+        //*****************************************
         BeginDrawing();
         
-       if(exitwindowsreq){
-        Exit(exitwindowsreq,windowsclose);
+       if(exitwindowsreq && k==5){ //bargasht be menu az safhe asli
+        Closemenu();
+        if(IsKeyPressed(KEY_ENTER)){
+            exitwindowsreq=false;
+            k=1;
+        }
+        else if(IsKeyPressed(KEY_SPACE)){
+            exitwindowsreq=false;
+        }
+       } 
+       if(exitwindowsreq && k!=5){
+        Exit();
 
-        }else{
-
+        }else if(k!=5){
         if(k==0 && entering){ // paksh seda vorodi
             PlaySound(boom);
             entering=false;
@@ -189,38 +214,42 @@ int main()
 
         choose(k); // entekhab safhe namayesh
         }
+        else if(k==5){
+        UpdateMusicStream(game);
+        //Music game
+        if(musictime>=1.0){
+            PlayMusicStream(game);
+            musictime=0.0f;
+        }
+        musictime=GetMusicTimePlayed(game)/GetMusicTimeLength(game);
+        if(IsKeyPressed(KEY_UP) && volume!=1.0f) {
+            volume+=0.1f;
+            SetMusicVolume(game,volume);
+        }
+        if(IsKeyPressed(KEY_DOWN) && volume!=0.0f){
+            volume-=0.1f;
+            SetMusicVolume(game,volume);
+        }
+        if(IsKeyPressed(KEY_P)){
+            pausemusic=true;
+            if(pausemusic) PauseMusicStream(game);
+        }
+        if(IsKeyPressed(KEY_R)){
+            pausemusic=false;
+            ResumeMusicStream(game);
+        }
+        //***************************************
+        //Board Game Screen
+        ClearBackground(GRAY);
+        DrawText("GameBoard",100,100,20,RED);
+
+        //***********************************************
+        }
         EndDrawing();
         }
         //Payan safhe avalie :D
         UnloadSound(boom);
         CloseAudioDevice();
         CloseWindow();
-        //Shoro safhe bazi
-        if(!CloseGame){
-        //Flags*********************
-        bool exitwindowsreq=false;
-        bool windowsclose=false;
-        //**************************
-        InitWindow(screenWidth,screenHeight,"Meet in the middle");
-        //Sound Game************************
-        InitAudioDevice();
-        Sound game=LoadSound("resources/");
-        //**********************************
-        while(!windowsclose){
-        if(IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()){ //khoroj az safhe
-            exitwindowsreq=true;
-        }
-            BeginDrawing();
-            if(exitwindowsreq) //Menu Khoroji
-                Closemenu();
-            else{//Game Screen
-                ClearBackground(WHITE);
-
-                
-            }
-            EndDrawing();
-            
-        }
-    }
         
 }
