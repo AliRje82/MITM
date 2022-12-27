@@ -143,7 +143,7 @@ int main()
 {
     //Tool va arz safhe menu....
     const int screenWidth = 1280; 
-    const int screenHeight = 800;
+    const int screenHeight = 720;
     int k=0; //Screen button;
     //MUSIC*************
     float musictime=1.0f;
@@ -155,7 +155,14 @@ int main()
     SetTargetFPS(60);
     SetExitKey(KEY_NULL);
 
-    //Board game ***********************************************
+    //Images ***************************************************
+    //Board game
+    Texture2D Board=LoadTexture("resources/Board.png");
+    //BOAT PLAYER 1
+    Texture2D Boat1=LoadTexture("resources/boat1.png");
+    //BOAT PLAYER 2
+    Texture2D Boat2=LoadTexture("resources/boat2.png");
+    //TAPAL HA
 
     //**********************************************************
 
@@ -163,7 +170,6 @@ int main()
     InitAudioDevice();
     Sound boom=LoadSound("resources/entergame.wav");
     Music game=LoadMusicStream("resources/gamemusic.mp3");
-
     //******************************************************
     
     while(!windowsclose){
@@ -193,16 +199,7 @@ int main()
         //*****************************************
         BeginDrawing();
         
-       if(exitwindowsreq && k==5){ //bargasht be menu az safhe asli
-        Closemenu();
-        if(IsKeyPressed(KEY_ENTER)){
-            exitwindowsreq=false;
-            k=1;
-        }
-        else if(IsKeyPressed(KEY_SPACE)){
-            exitwindowsreq=false;
-        }
-       } 
+
        if(exitwindowsreq && k!=5){
         Exit();
 
@@ -241,13 +238,27 @@ int main()
         //***************************************
         //Board Game Screen
         ClearBackground(GRAY);
-        DrawText("GameBoard",100,100,20,RED);
-
+        DrawTexture(Board,0,0,WHITE);
+        DrawTexture(Boat1,0,0,WHITE);
+        DrawTexture(Boat2,100,100,WHITE);
+         if(exitwindowsreq){ //bargasht be menu az safhe asli
+        Closemenu();
+        if(IsKeyPressed(KEY_ENTER)){
+            exitwindowsreq=false;
+            k=1;
+        }
+        else if(IsKeyPressed(KEY_SPACE)){
+            exitwindowsreq=false;
+        }
+       } 
         //***********************************************
         }
         EndDrawing();
         }
-        //Payan safhe avalie :D
+        UnloadTexture(Board);
+        UnloadTexture(Boat1);
+        UnloadTexture(Boat2);
+        UnloadMusicStream(game);
         UnloadSound(boom);
         CloseAudioDevice();
         CloseWindow();
