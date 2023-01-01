@@ -13,85 +13,60 @@ bool windowsclose=false;
 bool entering=true;
 bool CloseGame=false;
 //**********************
+//Structs***********************
+struct ship
+{
+    int x;
+    int y;
+};
+
+struct player
+{
+    int cards[4];
+struct ship ship1;
+struct ship ship2;
+}player1,player2;
+
+//*******************************
 
 //Screen Functions
-void enter(){
+void enter(Texture2D texture){
     ClearBackground(BLACK);
-    DrawText("MEET IN THE MIDDLE",300,350,55,WHITE);
-    DrawText("Press Enter to Countinue...",450,400,20,GRAY);
+    DrawTexture(texture,0,0,WHITE);
+    DrawText("Press Enter to Countinue...",450,350,30,BLUE);
 }
-void menu(){
+void menu(Texture2D texture){
     ClearBackground(WHITE);
-    DrawText("MEET IN THE MIDDLE",300,100,75,BROWN);
-    DrawText("1.Offline mode",450,300,50,BROWN);
-    DrawText("2.Online mode",450,350,50,BROWN);
-    DrawText("3.DevInfo",450,400,50,BROWN);
+    DrawTexture(texture,0,0,WHITE);
+}
+void Exit(Texture2D texture){
+    ClearBackground(WHITE);
+    DrawTexture(texture,0,0,WHITE);
+}
+void Help(Texture2D texture){
+    ClearBackground(WHITE);
+    DrawTexture(texture,0,0,WHITE);
+}
+void Closemenu(Texture2D texture){
+    DrawTexture(texture,0,0,WHITE);
 
 }
-void Exit(){
-    DrawRectangle(0,0,1280,800,WHITE);
-    DrawText("Are U Sure Darling ?! Y/N",110,350,60,BLACK);
-            
-    if(IsKeyPressed(KEY_N)){
-        exitwindowsreq=false; 
-    } 
-    else if(IsKeyPressed(KEY_Y)){
-        windowsclose=true;
-        CloseGame=true;
-    } 
-}
-void Help(int k){
-    if(k==2){
-        ClearBackground(GRAY);
-        DrawText("How to play the game",100,100,20,WHITE);
-        DrawText("1.Press KEY TO ROLL THE DICE",100,150,20,WHITE);
-        DrawText("2.Press KEY TO SHOW YOUR CHANCES CARD",100,200,20,WHITE);
-        DrawText("3.Click On your Mohre to move it",100,250,20,WHITE);
-        DrawText("Press Enter to exit the Help Menu",100,350,30,WHITE);
-    }else if(k==3){
-        ClearBackground(GRAY);
-        DrawText("How to play the game",100,100,20,WHITE);
-        DrawText("asdasdasdasd",100,150,20,WHITE);
-        DrawText("2.Press KEY TO SHOW YOUR CHANCES CARD",100,200,20,WHITE);
-        DrawText("3.Click On your Mohre to move it",100,250,20,WHITE);
-        DrawText("Press Enter to exit the Help Menu",100,350,30,WHITE);
-
-    }else if(k==4){
-        ClearBackground(GRAY);
-        DrawText("How to play the game",100,100,20,WHITE);
-        DrawText("asdasdasdasd",100,150,20,WHITE);
-        DrawText("2.Press KEY TO SHOW YOUR CHANCES CARD",100,200,20,WHITE);
-        DrawText("4.:/",100,250,20,WHITE);
-        DrawText("Press Enter to exit the Help Menu",100,350,30,WHITE);
-
-    }
-
-}
-void Closemenu(){
-    DrawRectangle(250,250,500,500,BLACK);
-    DrawText("Press enter to back to menu",500,150,15,WHITE);
-    DrawText("Press SPACE to back to game",500,200,15,WHITE);
-
-}
-void Devinfo(){
-    ClearBackground(BLACK);
-    DrawText("DEV INFO",500,200,60,WHITE);
-    DrawText("1.AliRje:",350,300,25,WHITE);
-    DrawText("2.AmirrezaKH:",350,350,25,WHITE);
-    DrawText("Press esc to back to menu",500,500,15,WHITE);
+void Devinfo(Texture2D texture){
+    ClearBackground(WHITE);
+    DrawTexture(texture,0,0,WHITE);
 }
 
-void choose(int k){
+void choose(int k,Texture2D texture){
     if(k==0){
-    return enter();
+    return enter(texture);
     }else if(k==1){
-    return menu();
-    }else if(k>=2 && k<=4 && help){
-    return  Help(k);
+    return menu(texture);
+    }else if(k==2 && help){
+    return  Help(texture);
    }/* else if(k==7)
     return MultiPlayer();
     */else if(k==6){
-    return Devinfo();
+    return Devinfo(texture);
     }
 }
 //****************
@@ -134,6 +109,12 @@ int roll_dice() {
     return temp;
     }
 }
+int chancecard(int arr[]){
+    srand((unsigned) time(NULL));
+    int card=rand()%4;
+    arr[card]++;
+    return card;
+}
 
 
 //**************
@@ -156,64 +137,116 @@ int main()
     SetExitKey(KEY_NULL);
 
     //Images ***************************************************
+    //Safhe ha
+    Texture2D Screan[8];
+    //closemenu
+    Screan[7]=LoadTexture("resources/closemenu.png");
+    //exit
+    Screan[8]=LoadTexture("resources/exit.png");
+    //Menu
+    Screan[1]=LoadTexture("resources/menu.png");
+    //entering
+    Screan[0]=LoadTexture("resources/Entering.png");
+    //DEVINFO
+    Screan[6]=LoadTexture("resources/devinfo.png");
+    //HELP AND RULES
+    Screan[2]=LoadTexture("resources/help.png");
     //Board game
     Texture2D Board=LoadTexture("resources/Board.png");
     //BOAT PLAYER 1
     Texture2D Boat1=LoadTexture("resources/boat1.png");
     //BOAT PLAYER 2
     Texture2D Boat2=LoadTexture("resources/boat2.png");
-    //TAPAL HA
-
+    //Mouse
+    struct mouse
+    {
+        int x;
+        int y;
+    }mouse;
+    
     //**********************************************************
 
     //AUDIO*************************************************
     InitAudioDevice();
+    Sound select=LoadSound("resources/select.wav");
     Sound boom=LoadSound("resources/entergame.wav");
     Music game=LoadMusicStream("resources/gamemusic.mp3");
     //******************************************************
     
     while(!windowsclose){
-        
 
-        if((IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()) && k!=6){ //khoroj az safhe
+        if((IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()) && k!=6 && k!=2){ //khoroj az safhe
             exitwindowsreq=true;
         }
-        if(IsKeyPressed(KEY_ENTER) && (k==0 || (k>=2 && k<=4))){ //rad shodan safhe hayi ke ba enter rad mishavand
-            if(k==4) help=false;
+        if(IsKeyPressed(KEY_ENTER) && k==0){ //rad shodan safhe hayi ke ba enter rad mishavand
             k++;
-
         }
         //MENU BAZI LOGIC
-        if(IsKeyPressed(KEY_ONE) && k==1){
-            if(help) k=2;
-            else    k=5;
-        }else if(IsKeyPressed(KEY_TWO) && k==1){
+        if(k==1){
+        mouse.x=GetMouseX();
+        mouse.y=GetMouseY();
+        if(923<=mouse.x && mouse.x<=1206){
+        if(260<=mouse.y && mouse.y<=330 && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){//singleplayer
+            k=5;
+            PlaySound(select);
+        }else if(mouse.y<=408 && 338<=mouse.y && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){//Multiplayer
         //   k=7
-        }else if(IsKeyPressed(KEY_THREE) && k==1){
+        PlaySound(select);
+        }else if(417<=mouse.y && mouse.y<=487 && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){//Devinfo
             k=6;
+            PlaySound(select);
+        }else if(496<=mouse.y && mouse.y<=566 && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){//Help
+            k=2;
+            PlaySound(select);
         }
-        //*****************************************
+        }
+        if(mouse.x<=139 && 11<=mouse.x && mouse.y<=712 && 642<=mouse.y && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))//exit
+            exitwindowsreq=true;
+        }
+        //Help Logic***********************************
+        if(k==2){
+        mouse.x=GetMouseX();
+        mouse.y=GetMouseY();
+        if((11<=mouse.x && mouse.x<=139 && mouse.y<=712 && 642<=mouse.y && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))|| IsKeyPressed(KEY_ESCAPE))
+            k=1;
+        }
+        //*********************************************
         if(k==6){ //Dev info logic
-            if(IsKeyPressed(KEY_ESCAPE)) k=1;
+            mouse.x=GetMouseX();
+            mouse.y=GetMouseY();
+            if(IsKeyPressed(KEY_ESCAPE) ||(mouse.x<=139 && 11<=mouse.x && mouse.y<=712 && 642<=mouse.y &&IsMouseButtonPressed(MOUSE_BUTTON_LEFT))) 
+            k=1;
         }
         //*****************************************
         BeginDrawing();
         
 
        if(exitwindowsreq && k!=5){
-        Exit();
+        Exit(Screan[8]);
+        mouse.x=GetMouseX();
+        mouse.y=GetMouseY();
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && 412<=mouse.x && mouse.x<=578 && 396<=mouse.y && mouse.y<=439){
+        exitwindowsreq=false; 
+        } 
+        else if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && 701<=mouse.x && mouse.x<=867 && 396<=mouse.y && mouse.y<=439){
+        windowsclose=true;
+        CloseGame=true;
+        }
 
         }else if(k!=5){
         if(k==0 && entering){ // paksh seda vorodi
             PlaySound(boom);
             entering=false;
         }
-
-        choose(k); // entekhab safhe namayesh
+        choose(k,Screan[k]);
         }
-        else if(k==5){
+        EndDrawing();
+
+        //Game LOOP
+        while(k==5){ 
+        BeginDrawing();
         UpdateMusicStream(game);
-        //Music game
+        //Music game*****************
         if(musictime>=1.0){
             PlayMusicStream(game);
             musictime=0.0f;
@@ -239,27 +272,45 @@ int main()
         //Board Game Screen
         ClearBackground(GRAY);
         DrawTexture(Board,0,0,WHITE);
-        DrawTexture(Boat1,0,0,WHITE);
-        DrawTexture(Boat2,100,100,WHITE);
+        //**************************
+
+        DrawTexture(Boat1,457,634,WHITE);
+        DrawTexture(Boat1,457,634,WHITE);
+        //******************************
+        DrawTexture(Boat2,1071,20,WHITE);
+        DrawTexture(Boat2,1071,20,WHITE);
+        //*****************************************************
+        if((IsKeyPressed(KEY_ESCAPE) || WindowShouldClose())){ //khoroj az safhe
+            exitwindowsreq=true;
+        }
          if(exitwindowsreq){ //bargasht be menu az safhe asli
-        Closemenu();
-        if(IsKeyPressed(KEY_ENTER)){
+        Closemenu(Screan[7]);
+        mouse.x=GetMouseX();
+        mouse.y=GetMouseY();
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && 472<=mouse.x && mouse.x<=808 && 370<=mouse.y && mouse.y<=428){
             exitwindowsreq=false;
             k=1;
         }
-        else if(IsKeyPressed(KEY_SPACE)){
+        else if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && 472<=mouse.x && mouse.x<=808 && 292<=mouse.y && mouse.y<=350){
             exitwindowsreq=false;
+        }//******************************************************
         }
+        EndDrawing();
        } 
         //***********************************************
         }
-        EndDrawing();
-        }
+        UnloadTexture(Screan[7]);
+        UnloadTexture(Screan[8]);
+        UnloadTexture(Screan[0]);
+        UnloadTexture(Screan[2]);
+        UnloadTexture(Screan[1]);
+        UnloadTexture(Screan[6]);
         UnloadTexture(Board);
         UnloadTexture(Boat1);
         UnloadTexture(Boat2);
         UnloadMusicStream(game);
         UnloadSound(boom);
+        UnloadSound(select);
         CloseAudioDevice();
         CloseWindow();
         
