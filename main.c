@@ -4,8 +4,8 @@
 #include "stdlib.h"
 #include "time.h"
 //**************************
-//Board game****************
-int board[9][9]; 
+// Board game****************
+int board[9][9];
 // flags*****************
 bool help = true;
 bool exitwindowsreq = false;
@@ -18,7 +18,6 @@ struct ship
 {
     int x;
     int y;
-    int pos;
     bool play;
 };
 
@@ -30,13 +29,20 @@ struct player
 } player1, player2;
 
 //*******************************
-
+int fcounter = 0;
+float alpha = 0.1;
 // Screen Functions
 void enter(Texture2D texture)
 {
+    fcounter++;
+    if (fcounter == 7 && alpha != 1)
+    {
+        fcounter = 0;
+        alpha += 0.1;
+    }
     ClearBackground(BLACK);
     DrawTexture(texture, 0, 0, WHITE);
-    DrawText("Press Enter to Countinue...", 450, 350, 30, BLUE);
+    DrawText("Press Enter to Countinue...", 450, 350, 30, Fade(BLUE, alpha));
 }
 void menu(Texture2D texture)
 {
@@ -138,6 +144,82 @@ int chancecard(int arr[])
     arr[card]++;
     return card;
 }
+void corrider(int *x, int *y)
+{
+    if (*x == 8 || *x == 7)
+    {
+        if (*x == 7)
+        {
+            *x = 8;
+            *y = 3;
+            return;
+        }
+        else
+        {
+            *x = 7;
+            *y = 6;
+            return;
+        }
+    }
+    else if (*x == 0 || *x == 6)
+    {
+        if (*x == 0)
+        {
+            *x = 1;
+            *y = 3;
+            return;
+        }
+        else
+        {
+            *x = 0;
+            *y = 6;
+            return;
+        }
+    }
+    else if (*x == 6 || *x == 2)
+    {
+        if (*x == 6)
+        {
+            *x = 2;
+            *y = 6;
+            return;
+        }
+        else
+        {
+            *x = 6;
+            *y = 2;
+            return;
+        }
+    }
+    else if (*x == 5 || *x == 3)
+    {
+        if (*x == 5)
+        {
+            *x = 3;
+            *y = 2;
+            return;
+        }
+        else
+        {
+            *x = 5;
+            *y = 6;
+            return;
+        }
+    }
+    else if (*x == 4)
+    {
+        if (*y == 7)
+        {
+            *y = 1;
+            return;
+        }
+        else
+        {
+            *y = 7;
+            return;
+        }
+    }
+}
 
 //**************
 
@@ -145,8 +227,8 @@ int chancecard(int arr[])
 int main()
 {
     // corriders are num 2 and chance home are num 1
-    board[8][3]=board[7][6]=board[6][2]=board[5][6]=board[4][1]=board[4][7]=board[3][2]=board[2][6]=board[1][3]=board[0][6]=2;
-    board[1][0]=board[1][7]=board[2][2]=board[3][5]=board[5][3]=board[6][6]=board[7][1]=board[7][8]=1;
+    board[8][3] = board[7][6] = board[6][2] = board[5][6] = board[4][1] = board[4][7] = board[3][2] = board[2][6] = board[1][3] = board[0][6] = 2;
+    board[1][0] = board[1][7] = board[2][2] = board[3][5] = board[5][3] = board[6][6] = board[7][1] = board[7][8] = 1;
     // Tool va arz safhe menu....
     const int screenWidth = 1280;
     const int screenHeight = 720;
@@ -182,6 +264,9 @@ int main()
     Texture2D Boat1 = LoadTexture("resources/boat1.png");
     // BOAT PLAYER 2
     Texture2D Boat2 = LoadTexture("resources/boat2.png");
+    //player section
+    Texture2D num1=LoadTexture("resources/1.png");
+    Texture2D num2=LoadTexture("resources/2.png");
     // Mouse
     struct mouse
     {
@@ -196,6 +281,8 @@ int main()
     Sound select = LoadSound("resources/select.wav");
     Sound boom = LoadSound("resources/entergame.wav");
     Music game = LoadMusicStream("resources/gamemusic.mp3");
+    Sound beep = LoadSound("resources/beep.wav");
+    Sound fall = LoadSound("resources/fall.wav");
     //******************************************************
 
     while (!windowsclose)
@@ -284,7 +371,24 @@ int main()
             choose(k, Screan[k]);
         }
         EndDrawing();
+        // GameReset
+        dice_maker();
+        player1.ship1.x = player1.ship2.x = 8;
+        player1.ship1.y = player1.ship2.y = 0;
+        player1.ship1.play = true;
+        player1.ship2.play = true;
+        player1.cards[0] = player1.cards[1] = player1.cards[2] = player1.cards[3] = 0;
 
+        player1.ship1.play = player2.ship1.play = player2.ship2.play = player1.ship2.play = true;
+
+        player2.ship1.play = true;
+        player2.ship2.play = true;
+        player2.ship1.x = player2.ship2.x = 0;
+        player2.ship1.y = player2.ship2.y = 8;
+        player2.cards[0] = player2.cards[1] = player2.cards[2] = player2.cards[3] = 0;
+        int dicetemp = 0;
+        int turn = 0;
+        bool roll = true;
         // Game LOOP
         while (k == 5)
         {
@@ -318,18 +422,326 @@ int main()
                 pausemusic = false;
                 ResumeMusicStream(game);
             }
-            //***************************************
             // Board Game Screen
             ClearBackground(GRAY);
             DrawTexture(Board, 0, 0, WHITE);
-            //**************************
+            // SHOW TIME********************
+            DrawText(TextFormat("%d", dicetemp), 126, 248, 30, WHITE); // DICE
 
-            DrawTexture(Boat1, 457, 634, WHITE);
-            DrawTexture(Boat1, 457, 634, WHITE);
-            //******************************
-            DrawTexture(Boat2, 1071, 20, WHITE);
-            DrawTexture(Boat2, 1071, 20, WHITE);
+            // PLAYER 1 *********************
+            DrawTexture(Boat1, 456 + 77 * player1.ship1.y, 20 + 77 * player1.ship1.x, WHITE); // SHIP 1
+            DrawTexture(Boat1, 456 + 77 * player1.ship2.y, 20 + 77 * player1.ship2.x, WHITE); // SHIP 2
+            // PLAYER 2 **********************
+            DrawTexture(Boat2, 456 + 77 * player2.ship1.y, 20 + 77 * player2.ship1.x, WHITE); // SHIP 1
+            DrawTexture(Boat2, 456 + 77 * player2.ship2.y, 20 + 77 * player2.ship2.x, WHITE); // SHIP 2
             //*****************************************************
+            if(turn%2==0){
+                DrawTexture(num1,30,645,WHITE);
+            }else{
+                DrawTexture(num2,30,645,WHITE);
+            }
+            // LOGIC GAME*********************************
+
+            mouse.x = GetMouseX();
+            mouse.y = GetMouseY();
+            if (((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= 82 && 30 <= mouse.x && mouse.y <= 697 && 645 <= mouse.y) || IsKeyPressed(KEY_D)) && roll)
+            {
+                dicetemp = roll_dice();
+                roll = false;
+            }
+            if (turn % 2 == 0)
+            { // player 1 turn
+                mouse.x = GetMouseX();
+                mouse.y = GetMouseY();
+                if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship1.y + 77) && (456 + 77 * player1.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship1.x + 77) && (20 + 77 * player1.ship1.x) <= mouse.y) && !roll && player1.ship1.play)
+                {
+                    if (!(player1.ship1.x == 8 && player1.ship1.y + dicetemp < 0))
+                    {
+                        if (!(player1.ship1.x == 0 && player1.ship1.y + dicetemp > 8))
+                        {
+                            if (player1.ship1.x % 2 == 0)
+                            {
+                                player1.ship1.y += dicetemp;
+                                if (player1.ship1.y > 8)
+                                {
+                                    player1.ship1.y = 8 - (player1.ship1.y % 8 + 1);
+                                    player1.ship1.x++;
+                                }
+                                else if (player1.ship1.y < 0)
+                                {
+                                    player1.ship1.y = 8 - (player1.ship1.y % 8 + 1);
+                                    player1.ship1.x--;
+                                }
+                            }
+                            else
+                            {
+                                player1.ship1.y -= dicetemp;
+                                if (player1.ship1.y > 8)
+                                {
+                                    player1.ship1.y = 8 - (player1.ship1.y % 8 + 1);
+                                    player1.ship1.x--;
+                                }
+                                else if (player1.ship1.y < 0)
+                                {
+                                    player1.ship1.y = 8 - (player1.ship1.y % 8 + 1);
+                                    player1.ship1.x++;
+                                }
+                            }
+                            turn++;
+                            roll = true;
+                            if (board[player1.ship1.x][player1.ship1.y] == 1)
+                                chancecard(player1.cards);
+                            if (board[player1.ship1.x][player1.ship1.y] == 2)
+                                corrider(&player1.ship1.x, &player1.ship1.y);
+                            player1.ship2.play = true;
+                            if ((player1.ship1.x == player2.ship1.x && player1.ship1.y == player2.ship1.y) || (player1.ship1.x == player2.ship2.x && player1.ship1.y == player2.ship2.y))
+                            {
+                                if (player1.ship1.x == player2.ship1.x && player1.ship1.y == player2.ship1.y)
+                                {
+                                    player2.ship1.x = 0;
+                                    player2.ship1.y = 8;
+                                    PlaySound(fall);
+                                }
+                                else
+                                {
+                                    player2.ship2.x = 0;
+                                    player2.ship2.y = 8;
+                                    PlaySound(fall);
+                                }
+                            }
+                        }
+                        else{
+                            player1.ship1.play = false;
+                            PlaySound(beep);
+                        }
+                    }
+                    else{
+                        player1.ship1.play = false;
+                        PlaySound(beep);
+                    }
+                }
+                else if (((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (457 + 77 * (player1.ship2.x) + 77) && (457 + 77 * (player1.ship2.x)) <= mouse.x && mouse.y <= (634 + 77 * (player1.ship2.y) + 77) && (634 + 77 * (player1.ship2.y)) <= mouse.y) && !roll) || !player1.ship1.play)
+                {
+                    if (!(player1.ship2.x == 8 && player1.ship2.y + dicetemp < 0))
+                    {
+                        if (!(player1.ship2.x == 0 && player1.ship2.y + dicetemp > 8))
+                        {
+                            if (player1.ship2.x % 2 == 0)
+                            {
+                                player1.ship2.y += dicetemp;
+                                if (player1.ship2.y > 8)
+                                {
+                                    player1.ship2.y = 8 - (player1.ship2.y % 8 + 1);
+                                    player1.ship2.x++;
+                                }
+                                else if (player1.ship2.y < 0)
+                                {
+                                    player1.ship2.y = 8 - (player1.ship2.y % 8 + 1);
+                                    player1.ship2.x--;
+                                }
+                            }
+                            else
+                            {
+                                player1.ship2.y -= dicetemp;
+                                if (player1.ship2.y > 8)
+                                {
+                                    player1.ship2.y = 8 - (player1.ship2.y % 8 + 1);
+                                    player1.ship2.x--;
+                                }
+                                else if (player1.ship2.y < 0)
+                                {
+                                    player1.ship2.y = 8 - (player1.ship2.y % 8 + 1);
+                                    player1.ship2.x++;
+                                }
+                            }
+                            turn++;
+                            roll = true;
+                            if (board[player1.ship2.x][player1.ship2.y] == 1)
+                                chancecard(player1.cards);
+                            if (board[player1.ship2.x][player1.ship2.y] == 2)
+                                corrider(&player1.ship2.x, &player1.ship2.y);
+                            player1.ship1.play = true;
+                            if ((player1.ship2.x == player2.ship1.x && player1.ship2.y == player2.ship1.y) || (player1.ship2.x == player2.ship2.x && player1.ship2.y == player2.ship2.y))
+                            {
+                                if (player1.ship1.x == player2.ship1.x && player1.ship1.y == player2.ship1.y)
+                                {
+                                    player2.ship1.x = 0;
+                                    player2.ship1.y = 8;
+                                    PlaySound(fall);
+                                }
+                                else
+                                {
+                                    player2.ship2.x = 0;
+                                    player2.ship2.y = 8;
+                                    PlaySound(fall);
+                                }
+                            }
+                        }
+                        else{
+                            player1.ship2.play = false;
+                            PlaySound(beep);
+                        }
+                    }
+                    else{
+                        player1.ship2.play = false;
+                        PlaySound(beep);
+                    }
+                }
+                if (!player1.ship1.play && !player1.ship2.play)
+                {
+                    turn++;
+                    roll = true;
+                    player1.ship1.play = true;
+                    player1.ship2.play = true;
+                }
+            }
+            else
+            {
+                mouse.x = GetMouseX();
+                mouse.y = GetMouseY();
+                if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && !roll && player2.ship1.play)
+                {
+                    if (!(player2.ship1.x == 8 && player2.ship1.y + dicetemp < 0))
+                    {
+                        if (!(player2.ship1.x == 0 && player2.ship1.y + dicetemp > 8))
+                        {
+                            if (player2.ship1.x % 2 == 0)
+                            {
+                                player2.ship1.y += dicetemp;
+                                if (player2.ship1.y > 8)
+                                {
+                                    player2.ship1.y = 8 - (player2.ship1.y % 8 + 1);
+                                    player2.ship1.x++;
+                                }
+                                else if (player2.ship1.y < 0)
+                                {
+                                    player2.ship1.y = 8 - (player2.ship1.y % 8 + 1);
+                                    player2.ship1.x--;
+                                }
+                            }
+                            else
+                            {
+                                player2.ship1.y -= dicetemp;
+                                if (player2.ship1.y > 8)
+                                {
+                                    player2.ship1.y = 8 - (player2.ship1.y % 8 + 1);
+                                    player2.ship1.x--;
+                                }
+                                else if (player2.ship1.y < 0)
+                                {
+                                    player2.ship1.y = 8 - (player2.ship1.y % 8 + 1);
+                                    player2.ship1.x++;
+                                }
+                            }
+                            turn++;
+                            roll = true;
+                            if (board[player2.ship1.x][player2.ship1.y] == 1)
+                                chancecard(player2.cards);
+                            if (board[player2.ship1.x][player2.ship1.y] == 2)
+                                corrider(&player2.ship1.x, &player2.ship1.y);
+                            player2.ship2.play = true;
+                            if ((player2.ship1.x == player1.ship1.x && player2.ship1.y == player1.ship1.y) || (player2.ship1.x == player1.ship2.x && player2.ship1.y == player1.ship2.y))
+                            {
+                                if (player2.ship1.x == player1.ship1.x && player2.ship1.y == player1.ship1.y)
+                                {
+                                    player1.ship1.x = 0;
+                                    player1.ship1.y = 8;
+                                    PlaySound(fall);
+                                }
+                                else
+                                {
+                                    player1.ship2.x = 0;
+                                    player1.ship2.y = 8;
+                                    PlaySound(fall);
+                                }
+                            }
+                        }
+                        else{
+                            player2.ship1.play = false;
+                            PlaySound(beep);
+                        }
+                    }
+                    else{
+                        player2.ship1.play = false;
+                        PlaySound(beep);
+                    }
+                }
+                else if (((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (457 + 77 * (player2.ship2.x) + 77) && (457 + 77 * (player2.ship2.x)) <= mouse.x && mouse.y <= (634 + 77 * (player2.ship2.y) + 77) && (634 + 77 * (player2.ship2.y)) <= mouse.y) && !roll) || !player2.ship1.play)
+                {
+                    if (!(player2.ship2.x == 8 && player2.ship2.y + dicetemp < 0))
+                    {
+                        if (!(player2.ship2.x == 0 && player2.ship2.y + dicetemp > 8))
+                        {
+                            if (player2.ship2.x % 2 == 0)
+                            {
+                                player2.ship2.y += dicetemp;
+                                if (player2.ship2.y > 8)
+                                {
+                                    player2.ship2.y = 8 - (player2.ship2.y % 8 + 1);
+                                    player2.ship2.x++;
+                                }
+                                else if (player2.ship2.y < 0)
+                                {
+                                    player2.ship2.y = 8 - (player2.ship2.y % 8 + 1);
+                                    player2.ship2.x--;
+                                }
+                            }
+                            else
+                            {
+                                player2.ship2.y -= dicetemp;
+                                if (player2.ship2.y > 8)
+                                {
+                                    player2.ship2.y = 8 - (player2.ship2.y % 8 + 1);
+                                    player2.ship2.x--;
+                                }
+                                else if (player2.ship2.y < 0)
+                                {
+                                    player2.ship2.y = 8 - (player2.ship2.y % 8 + 1);
+                                    player2.ship2.x++;
+                                }
+                            }
+                            turn++;
+                            roll = true;
+                            if (board[player2.ship2.x][player2.ship2.y] == 1)
+                                chancecard(player2.cards);
+                            if (board[player2.ship2.x][player2.ship2.y] == 2)
+                                corrider(&player2.ship2.x, &player2.ship2.y);
+                            player2.ship1.play = true;
+                            if ((player2.ship2.x == player1.ship1.x && player2.ship2.y == player1.ship1.y) || (player2.ship2.x == player1.ship2.x && player2.ship2.y == player1.ship2.y))
+                            {
+                                if (player2.ship2.x == player1.ship1.x && player2.ship2.y == player1.ship1.y)
+                                {
+                                    player1.ship1.x = 0;
+                                    player1.ship1.y = 8;
+                                    PlaySound(fall);
+                                }
+                                else
+                                {
+                                    player1.ship2.x = 0;
+                                    player1.ship2.y = 8;
+                                    PlaySound(fall);
+                                }
+                            }
+                        }
+                        else{
+                            player2.ship2.play = false;
+                            PlaySound(beep);
+                        }
+                    }
+                    else{
+                        player2.ship2.play = false;
+                        PlaySound(beep);
+                    }
+                }
+                if (!player2.ship1.play && !player2.ship2.play)
+                {
+                    turn++;
+                    roll = true;
+                    player2.ship1.play = true;
+                    player2.ship2.play = true;
+                }
+            }
+            //*********************************************
             if ((IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()))
             { // khoroj az safhe
                 exitwindowsreq = true;
@@ -365,6 +777,10 @@ int main()
     UnloadMusicStream(game);
     UnloadSound(boom);
     UnloadSound(select);
+    UnloadSound(beep);
+    UnloadSound(fall);
+    UnloadTexture(num1);
+    UnloadTexture(num2);
     CloseAudioDevice();
     CloseWindow();
 }
