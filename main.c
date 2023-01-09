@@ -19,6 +19,7 @@ struct ship
     int x;
     int y;
     bool play;
+    bool win;
 };
 
 struct player
@@ -161,7 +162,7 @@ void corrider(int *x, int *y)
             return;
         }
     }
-    else if (*x == 0 || *x == 6)
+    else if (*x == 0 || *x == 1)
     {
         if (*x == 0)
         {
@@ -264,9 +265,9 @@ int main()
     Texture2D Boat1 = LoadTexture("resources/boat1.png");
     // BOAT PLAYER 2
     Texture2D Boat2 = LoadTexture("resources/boat2.png");
-    //player section
-    Texture2D num1=LoadTexture("resources/1.png");
-    Texture2D num2=LoadTexture("resources/2.png");
+    // player section
+    Texture2D num1 = LoadTexture("resources/1.png");
+    Texture2D num2 = LoadTexture("resources/2.png");
     // Mouse
     struct mouse
     {
@@ -377,10 +378,12 @@ int main()
         player1.ship1.y = player1.ship2.y = 0;
         player1.ship1.play = true;
         player1.ship2.play = true;
+        player1.ship1.win=player1.ship2.win=false;
         player1.cards[0] = player1.cards[1] = player1.cards[2] = player1.cards[3] = 0;
 
         player1.ship1.play = player2.ship1.play = player2.ship2.play = player1.ship2.play = true;
 
+        player2.ship2.win=player2.ship1.win=false;
         player2.ship1.play = true;
         player2.ship2.play = true;
         player2.ship1.x = player2.ship2.x = 0;
@@ -401,14 +404,16 @@ int main()
                 musictime = 0.0f;
             }
             musictime = GetMusicTimePlayed(game) / GetMusicTimeLength(game);
-            if (IsKeyPressed(KEY_UP) && volume != 1.0f)
+            if (IsKeyPressed(KEY_UP) && volume < 1.0)
             {
-                volume += 0.1f;
+                volume += 0.1;
+                if(volume <=1)
                 SetMusicVolume(game, volume);
             }
-            if (IsKeyPressed(KEY_DOWN) && volume != 0.0f)
+            if (IsKeyPressed(KEY_DOWN) && volume > 0.0)
             {
-                volume -= 0.1f;
+                volume -= 0.1;
+                if(volume >= 0)
                 SetMusicVolume(game, volume);
             }
             if (IsKeyPressed(KEY_P))
@@ -421,6 +426,7 @@ int main()
             {
                 pausemusic = false;
                 ResumeMusicStream(game);
+
             }
             // Board Game Screen
             ClearBackground(GRAY);
@@ -435,10 +441,13 @@ int main()
             DrawTexture(Boat2, 456 + 77 * player2.ship1.y, 20 + 77 * player2.ship1.x, WHITE); // SHIP 1
             DrawTexture(Boat2, 456 + 77 * player2.ship2.y, 20 + 77 * player2.ship2.x, WHITE); // SHIP 2
             //*****************************************************
-            if(turn%2==0){
-                DrawTexture(num1,30,645,WHITE);
-            }else{
-                DrawTexture(num2,30,645,WHITE);
+            if (turn % 2 == 0)
+            {
+                DrawTexture(num1, 210, 588, WHITE);
+            }
+            else
+            {
+                DrawTexture(num2, 210, 588, WHITE);
             }
             // LOGIC GAME*********************************
 
@@ -453,7 +462,7 @@ int main()
             { // player 1 turn
                 mouse.x = GetMouseX();
                 mouse.y = GetMouseY();
-                if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship1.y + 77) && (456 + 77 * player1.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship1.x + 77) && (20 + 77 * player1.ship1.x) <= mouse.y) && !roll && player1.ship1.play)
+                if (((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship1.y + 77) && (456 + 77 * player1.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship1.x + 77) && (20 + 77 * player1.ship1.x) <= mouse.y) && !roll && player1.ship1.play && !(player1.ship1.win)) || !player1.ship2.play)
                 {
                     if (!(player1.ship1.x == 8 && player1.ship1.y + dicetemp < 0))
                     {
@@ -464,13 +473,13 @@ int main()
                                 player1.ship1.y += dicetemp;
                                 if (player1.ship1.y > 8)
                                 {
-                                    player1.ship1.y = 8 - (player1.ship1.y % 8 + 1);
-                                    player1.ship1.x++;
+                                    player1.ship1.y = 17-player1.ship1.y;
+                                    player1.ship1.x--;
                                 }
                                 else if (player1.ship1.y < 0)
                                 {
-                                    player1.ship1.y = 8 - (player1.ship1.y % 8 + 1);
-                                    player1.ship1.x--;
+                                    player1.ship1.y = -player1.ship1.y-1;
+                                    player1.ship1.x++;
                                 }
                             }
                             else
@@ -478,13 +487,13 @@ int main()
                                 player1.ship1.y -= dicetemp;
                                 if (player1.ship1.y > 8)
                                 {
-                                    player1.ship1.y = 8 - (player1.ship1.y % 8 + 1);
-                                    player1.ship1.x--;
+                                    player1.ship1.y =17-player1.ship1.y;
+                                    player1.ship1.x++;
                                 }
                                 else if (player1.ship1.y < 0)
                                 {
-                                    player1.ship1.y = 8 - (player1.ship1.y % 8 + 1);
-                                    player1.ship1.x++;
+                                    player1.ship1.y = -player1.ship1.y- 1;
+                                    player1.ship1.x--;
                                 }
                             }
                             turn++;
@@ -494,6 +503,8 @@ int main()
                             if (board[player1.ship1.x][player1.ship1.y] == 2)
                                 corrider(&player1.ship1.x, &player1.ship1.y);
                             player1.ship2.play = true;
+                            if(player1.ship1.x==5 && player1.ship1.y== 5)
+                                player1.ship1.win=true;
                             if ((player1.ship1.x == player2.ship1.x && player1.ship1.y == player2.ship1.y) || (player1.ship1.x == player2.ship2.x && player1.ship1.y == player2.ship2.y))
                             {
                                 if (player1.ship1.x == player2.ship1.x && player1.ship1.y == player2.ship1.y)
@@ -510,17 +521,19 @@ int main()
                                 }
                             }
                         }
-                        else{
+                        else
+                        {
                             player1.ship1.play = false;
                             PlaySound(beep);
                         }
                     }
-                    else{
+                    else
+                    {
                         player1.ship1.play = false;
                         PlaySound(beep);
                     }
                 }
-                else if (((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (457 + 77 * (player1.ship2.x) + 77) && (457 + 77 * (player1.ship2.x)) <= mouse.x && mouse.y <= (634 + 77 * (player1.ship2.y) + 77) && (634 + 77 * (player1.ship2.y)) <= mouse.y) && !roll) || !player1.ship1.play)
+                else if (((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * (player1.ship2.y) + 77) && (456 + 77 * (player1.ship2.y)) <= mouse.x && mouse.y <= (20 + 77 * (player1.ship2.x) + 77) && (20 + 77 * (player1.ship2.x)) <= mouse.y) && !roll && player1.ship2.play && !player1.ship2.win) || !player1.ship1.play)
                 {
                     if (!(player1.ship2.x == 8 && player1.ship2.y + dicetemp < 0))
                     {
@@ -531,13 +544,13 @@ int main()
                                 player1.ship2.y += dicetemp;
                                 if (player1.ship2.y > 8)
                                 {
-                                    player1.ship2.y = 8 - (player1.ship2.y % 8 + 1);
-                                    player1.ship2.x++;
+                                    player1.ship2.y = 17-player1.ship2.y;
+                                    player1.ship2.x--;
                                 }
                                 else if (player1.ship2.y < 0)
                                 {
-                                    player1.ship2.y = 8 - (player1.ship2.y % 8 + 1);
-                                    player1.ship2.x--;
+                                    player1.ship2.y = -player1.ship2.y- 1;
+                                    player1.ship2.x++;
                                 }
                             }
                             else
@@ -545,13 +558,13 @@ int main()
                                 player1.ship2.y -= dicetemp;
                                 if (player1.ship2.y > 8)
                                 {
-                                    player1.ship2.y = 8 - (player1.ship2.y % 8 + 1);
-                                    player1.ship2.x--;
+                                    player1.ship2.y = 17-player1.ship2.y;
+                                    player1.ship2.x++;
                                 }
                                 else if (player1.ship2.y < 0)
                                 {
-                                    player1.ship2.y = 8 - (player1.ship2.y % 8 + 1);
-                                    player1.ship2.x++;
+                                    player1.ship2.y = -player1.ship2.y- 1;
+                                    player1.ship2.x--;
                                 }
                             }
                             turn++;
@@ -561,6 +574,8 @@ int main()
                             if (board[player1.ship2.x][player1.ship2.y] == 2)
                                 corrider(&player1.ship2.x, &player1.ship2.y);
                             player1.ship1.play = true;
+                            if(player1.ship2.x==5 && player1.ship2.y==5) 
+                                player1.ship2.win=true;
                             if ((player1.ship2.x == player2.ship1.x && player1.ship2.y == player2.ship1.y) || (player1.ship2.x == player2.ship2.x && player1.ship2.y == player2.ship2.y))
                             {
                                 if (player1.ship1.x == player2.ship1.x && player1.ship1.y == player2.ship1.y)
@@ -577,12 +592,14 @@ int main()
                                 }
                             }
                         }
-                        else{
+                        else
+                        {
                             player1.ship2.play = false;
                             PlaySound(beep);
                         }
                     }
-                    else{
+                    else
+                    {
                         player1.ship2.play = false;
                         PlaySound(beep);
                     }
@@ -599,7 +616,7 @@ int main()
             {
                 mouse.x = GetMouseX();
                 mouse.y = GetMouseY();
-                if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && !roll && player2.ship1.play)
+                if (((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && !roll && player2.ship1.play && !player2.ship1.win) || !player2.ship2.play)
                 {
                     if (!(player2.ship1.x == 8 && player2.ship1.y + dicetemp < 0))
                     {
@@ -610,13 +627,13 @@ int main()
                                 player2.ship1.y += dicetemp;
                                 if (player2.ship1.y > 8)
                                 {
-                                    player2.ship1.y = 8 - (player2.ship1.y % 8 + 1);
-                                    player2.ship1.x++;
+                                    player2.ship1.y = 17-player2.ship1.y;
+                                    player2.ship1.x--;
                                 }
                                 else if (player2.ship1.y < 0)
                                 {
-                                    player2.ship1.y = 8 - (player2.ship1.y % 8 + 1);
-                                    player2.ship1.x--;
+                                    player2.ship1.y =-player2.ship1.y-1;
+                                    player2.ship1.x++;
                                 }
                             }
                             else
@@ -624,13 +641,13 @@ int main()
                                 player2.ship1.y -= dicetemp;
                                 if (player2.ship1.y > 8)
                                 {
-                                    player2.ship1.y = 8 - (player2.ship1.y % 8 + 1);
-                                    player2.ship1.x--;
+                                    player2.ship1.y = 17-player2.ship1.y;
+                                    player2.ship1.x++;
                                 }
                                 else if (player2.ship1.y < 0)
                                 {
-                                    player2.ship1.y = 8 - (player2.ship1.y % 8 + 1);
-                                    player2.ship1.x++;
+                                    player2.ship1.y =-player2.ship1.y- 1;
+                                    player2.ship1.x--;
                                 }
                             }
                             turn++;
@@ -640,6 +657,8 @@ int main()
                             if (board[player2.ship1.x][player2.ship1.y] == 2)
                                 corrider(&player2.ship1.x, &player2.ship1.y);
                             player2.ship2.play = true;
+                            if(player2.ship1.x==5 && player2.ship1.y==5) 
+                                player2.ship1.win=true;
                             if ((player2.ship1.x == player1.ship1.x && player2.ship1.y == player1.ship1.y) || (player2.ship1.x == player1.ship2.x && player2.ship1.y == player1.ship2.y))
                             {
                                 if (player2.ship1.x == player1.ship1.x && player2.ship1.y == player1.ship1.y)
@@ -656,17 +675,19 @@ int main()
                                 }
                             }
                         }
-                        else{
+                        else
+                        {
                             player2.ship1.play = false;
                             PlaySound(beep);
                         }
                     }
-                    else{
+                    else
+                    {
                         player2.ship1.play = false;
                         PlaySound(beep);
                     }
                 }
-                else if (((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (457 + 77 * (player2.ship2.x) + 77) && (457 + 77 * (player2.ship2.x)) <= mouse.x && mouse.y <= (634 + 77 * (player2.ship2.y) + 77) && (634 + 77 * (player2.ship2.y)) <= mouse.y) && !roll) || !player2.ship1.play)
+                else if (((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * (player2.ship2.y) + 77) && (456 + 77 * (player2.ship2.y)) <= mouse.x && mouse.y <= (20 + 77 * (player2.ship2.x) + 77) && (20 + 77 * (player2.ship2.x)) <= mouse.y) && !roll && player2.ship2.play && !player2.ship2.win) || !player2.ship1.play)
                 {
                     if (!(player2.ship2.x == 8 && player2.ship2.y + dicetemp < 0))
                     {
@@ -677,13 +698,13 @@ int main()
                                 player2.ship2.y += dicetemp;
                                 if (player2.ship2.y > 8)
                                 {
-                                    player2.ship2.y = 8 - (player2.ship2.y % 8 + 1);
-                                    player2.ship2.x++;
+                                    player2.ship2.y = 17-player2.ship2.y;
+                                    player2.ship2.x--;
                                 }
                                 else if (player2.ship2.y < 0)
                                 {
-                                    player2.ship2.y = 8 - (player2.ship2.y % 8 + 1);
-                                    player2.ship2.x--;
+                                    player2.ship2.y = -player2.ship2.y-1;
+                                    player2.ship2.x++;
                                 }
                             }
                             else
@@ -691,13 +712,13 @@ int main()
                                 player2.ship2.y -= dicetemp;
                                 if (player2.ship2.y > 8)
                                 {
-                                    player2.ship2.y = 8 - (player2.ship2.y % 8 + 1);
-                                    player2.ship2.x--;
+                                    player2.ship2.y = 17-player2.ship2.y;
+                                    player2.ship2.x++;
                                 }
                                 else if (player2.ship2.y < 0)
                                 {
-                                    player2.ship2.y = 8 - (player2.ship2.y % 8 + 1);
-                                    player2.ship2.x++;
+                                    player2.ship2.y = -player2.ship2.y- 1;
+                                    player2.ship2.x--;
                                 }
                             }
                             turn++;
@@ -707,6 +728,8 @@ int main()
                             if (board[player2.ship2.x][player2.ship2.y] == 2)
                                 corrider(&player2.ship2.x, &player2.ship2.y);
                             player2.ship1.play = true;
+                            if(player2.ship2.x==5 && player2.ship2.y==5)
+                                player2.ship2.win = true;
                             if ((player2.ship2.x == player1.ship1.x && player2.ship2.y == player1.ship1.y) || (player2.ship2.x == player1.ship2.x && player2.ship2.y == player1.ship2.y))
                             {
                                 if (player2.ship2.x == player1.ship1.x && player2.ship2.y == player1.ship1.y)
@@ -723,12 +746,14 @@ int main()
                                 }
                             }
                         }
-                        else{
+                        else
+                        {
                             player2.ship2.play = false;
                             PlaySound(beep);
                         }
                     }
-                    else{
+                    else
+                    {
                         player2.ship2.play = false;
                         PlaySound(beep);
                     }
