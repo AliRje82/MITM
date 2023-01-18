@@ -28,6 +28,7 @@ struct player
     int cards[4]; //khone 0 = zarib khone 1 = tass mojadad khone 2 = dar baste khone 3 = mahdodiat
     struct ship ship1;
     struct ship ship2;
+    bool close;
 } player1, player2;
 
 //*******************************
@@ -228,7 +229,7 @@ void corrider(int *x, int *y)
         }
     }
 }
-int move(int dicetemp, struct ship *ship, struct player player, Sound beep)
+int move(int dicetemp, struct ship *ship, struct player player,bool *card ,Sound beep)
 {
     if (!(ship->x == 8 && ship->y + dicetemp < 0))
     {
@@ -264,8 +265,11 @@ int move(int dicetemp, struct ship *ship, struct player player, Sound beep)
             }
             if (board[ship->x][ship->y] == 1)
                 chancecard(player.cards);
-            if (board[ship->x][ship->y] == 2)
+            if (board[ship->x][ship->y] == 2){
+                if(!*card)
                 corrider(&ship->x, &ship->y);
+                else *card=false;
+            }
             if (ship->x == 5 && ship->y == 5)
                 ship->win = true;
             return 1;
@@ -458,6 +462,7 @@ int main()
         int dicetemp;
         int turn;
         bool roll;
+        bool card;
 //Load Game
         FILE *Load;
         Load=fopen("save//save.dat","rb");
@@ -467,6 +472,7 @@ int main()
         fread(&turn,sizeof(int),1,Load);
         fread(&dicetemp,sizeof(int),1,Load);
         fread(&roll,sizeof(bool),1,Load);
+        fread(&card,sizeof(bool),1,Load);
         }else{
 //Game data reset *******************************************************************************************
         player1.ship1.x = player1.ship2.x = 8;
@@ -477,6 +483,7 @@ int main()
         player1.cards[0] = player1.cards[1] = player1.cards[2] = player1.cards[3] = 0;
 
         player1.ship1.play = player2.ship1.play = player2.ship2.play = player1.ship2.play = true;
+        player1.close=player2.close=false;
 
         player2.ship2.win = player2.ship1.win = false;
         player2.ship1.play = true;
@@ -487,6 +494,7 @@ int main()
         dicetemp = 0;
         turn = 0;
         roll = true;
+        card=false;
         }
         musictime = 1.0f;
 //************************************************************************************************************
@@ -560,9 +568,35 @@ int main()
             { // player 1 turn
                 mouse.x = GetMouseX();
                 mouse.y = GetMouseY();
-                if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship1.y + 77) && (456 + 77 * player1.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship1.x + 77) && (20 + 77 * player1.ship1.x) <= mouse.y) && !roll && player1.ship1.play) || (!player1.ship2.play && !player1.ship2.win))) && !(player1.ship1.win))
+                if(player1.cards[0]>0){
+                    player1.cards[0]--;
+                    dicetemp=dicetemp*2;
+                }
+                if(player1.cards[1]>0){
+                    player1.cards[1]--;
+                    roll=true;
+                }
+                if(player2.cards[3]>0 && !card){
+                    player2.cards[3]--;
+                    card=true;
+                }
+                if(player1.cards[2]>0 && !player1.close){
+                    player1.close=true;
+                    player1.cards[2]--;
+                }
+                if((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship1.y + 77) && (456 + 77 * player1.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship1.x + 77) && (20 + 77 * player1.ship1.x) <= mouse.y) && card){
+                    card=false;
+                    player1.ship1.play=false;
+                }
+                if((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship2.y + 77) && (456 + 77 * player1.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship2.x + 77) && (20 + 77 * player1.ship2.x) <= mouse.y) && card){
+                    card=false;
+                    player1.ship2.play=false;
+                }
+
+
+                if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship1.y + 77) && (456 + 77 * player1.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship1.x + 77) && (20 + 77 * player1.ship1.x) <= mouse.y) && !roll && player1.ship1.play) || (!player1.ship2.play && !player1.ship2.win))&& !card) && !(player1.ship1.win))
                 {
-                    if (move(dicetemp, &player1.ship1, player1, beep))
+                    if (move(dicetemp, &player1.ship1, player1,&player1.close,beep))
                     {
                         hitcheck(player1.ship1, &player2.ship1, &player2.ship2, fall);
                         turn++;
@@ -572,7 +606,7 @@ int main()
                 }
                 else if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship2.y + 77) && (456 + 77 * player1.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship2.x + 77) && (20 + 77 * player1.ship2.x) <= mouse.y) && !roll && player1.ship2.play) || (!player1.ship1.play && !player1.ship1.win))) && !(player1.ship2.win))
                 {
-                    if (move(dicetemp, &player1.ship2, player1, beep))
+                    if (move(dicetemp, &player1.ship2, player1,&player1.close,beep))
                     {
                         hitcheck(player1.ship2, &player2.ship1, &player2.ship2, fall);
                         turn++;
@@ -590,11 +624,37 @@ int main()
             }
             else
             {
+
                 mouse.x = GetMouseX();
                 mouse.y = GetMouseY();
-                if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && !roll && player2.ship1.play) || (!player2.ship2.play && !player2.ship2.win))) && !(player2.ship1.win))
+                if(player2.cards[0]>0){
+                    player2.cards[0]--;
+                    dicetemp=dicetemp*2;
+                }
+                if(player2.cards[1]>0){
+                    player2.cards[1]--;
+                    roll=true;
+                }
+                if(player1.cards[3]>0 && !card){
+                    player1.cards[3]--;
+                    card=true;
+                }
+                if(player2.cards[2]>0 && !player2.close){
+                    player2.close=true;
+                    player2.cards[2]--;
+                }
+                if((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && card){
+                    card=false;
+                    player2.ship1.play=false;
+                }
+                if((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship2.y + 77) && (456 + 77 * player2.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship2.x + 77) && (20 + 77 * player2.ship2.x) <= mouse.y) && card){
+                    card=false;
+                    player2.ship2.play=false;
+                }
+                
+                if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && !roll && player2.ship1.play) || (!player2.ship2.play && !player2.ship2.win)) && !card) && !(player2.ship1.win))
                 {
-                    if (move(dicetemp, &player2.ship1, player2, beep))
+                    if (move(dicetemp, &player2.ship1, player2,&player1.close,beep))
                     {
                         hitcheck(player2.ship1, &player1.ship1, &player1.ship2, fall);
                         turn++;
@@ -602,9 +662,9 @@ int main()
                         player2.ship2.play = true;
                     }
                 }
-                else if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship2.y + 77) && (456 + 77 * player2.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship2.x + 77) && (20 + 77 * player2.ship2.x) <= mouse.y) && !roll && player2.ship2.play) || (!player2.ship1.play && !player2.ship1.win))) && !(player2.ship2.win))
+                else if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship2.y + 77) && (456 + 77 * player2.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship2.x + 77) && (20 + 77 * player2.ship2.x) <= mouse.y) && !roll && player2.ship2.play) || (!player2.ship1.play && !player2.ship1.win))&& !card) && !(player2.ship2.win))
                 {
-                    if (move(dicetemp, &player2.ship2, player2, beep))
+                    if (move(dicetemp, &player2.ship2, player2,&player1.close,beep))
                     {
                         hitcheck(player2.ship2, &player1.ship1, &player1.ship2, fall);
                         turn++;
@@ -647,6 +707,7 @@ int main()
                     fwrite(&turn,sizeof(int),1,save);
                     fwrite(&dicetemp,sizeof(int),1,save);
                     fwrite(&roll,sizeof(bool),1,save);
+                    fwrite(&card,sizeof(bool),1,save);
                     fclose(save);
                     exitwindowsreq = false;
                     k = 1;
