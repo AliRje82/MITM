@@ -572,16 +572,16 @@ int main()
             //CardTemp
             if(cardtemp==0){
                 DrawText("You got A ",40,429,23,WHITE);
-                DrawText("2X ",54,429,23,WHITE);
+                DrawText("2X ",40,459,23,WHITE);
             }else if(cardtemp==1){
                 DrawText("You got A tass",40,429,23,WHITE);
-                DrawText("mojadad",54,429,23,WHITE);
+                DrawText("mojadad",40,459,23,WHITE);
             }else if(cardtemp==2){
                 DrawText("You got A",40,429,23,WHITE);
-                DrawText("No corrider ",54,429,23,WHITE);
+                DrawText("No corrider ",40,459,23,WHITE);
             }else if(cardtemp==3){
                 DrawText("You got A",40,429,23,WHITE);
-                DrawText("mahdodiat",54,429,23,WHITE);
+                DrawText("mahdodiat",40,459,23,WHITE);
             }
             // SHOW TIME********************
             DrawText(TextFormat("%d", dicetemp), 126, 248, 30, WHITE); // DICE
@@ -707,7 +707,7 @@ int main()
                 
                 if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && !roll && player2.ship1.play) || (!player2.ship2.play && !player2.ship2.win)) && !card) && !(player2.ship1.win))
                 {
-                    if (move(dicetemp, &player2.ship1, player2.cards,&player1.close,beep))
+                    if (move(dicetemp, &player2.ship1, player2.cards,&player2.close,beep))
                     {
                         hitcheck(player2.ship1, &player1.ship1, &player1.ship2, fall);
                         turn++;
@@ -717,7 +717,7 @@ int main()
                 }
                 else if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship2.y + 77) && (456 + 77 * player2.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship2.x + 77) && (20 + 77 * player2.ship2.x) <= mouse.y) && !roll && player2.ship2.play) || (!player2.ship1.play && !player2.ship1.win))&& !card) && !(player2.ship2.win))
                 {
-                    if (move(dicetemp, &player2.ship2, player2.cards,&player1.close,beep))
+                    if (move(dicetemp, &player2.ship2, player2.cards,&player2.close,beep))
                     {
                         hitcheck(player2.ship2, &player1.ship1, &player1.ship2, fall);
                         turn++;
