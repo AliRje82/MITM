@@ -13,6 +13,8 @@ bool windowsclose = false;
 bool entering = true;
 bool CloseGame = false;
 bool player1w;
+int framecounter;
+const char hacked[15]="You Are Hacked";
 int cardtemp;
 //**********************
 // Structs***********************
@@ -87,6 +89,12 @@ void win(Texture2D texture){
         DrawText("2",906,487,30,WHITE);
     }
 }
+void easter(Texture2D texture){
+    ClearBackground(WHITE);
+    DrawTexture(texture,0,0,WHITE);
+    DrawText(TextSubtext(hacked,0,framecounter/20),431,156,60,RED);
+    framecounter++;
+}
 
 void choose(int k, Texture2D texture)
 {
@@ -109,6 +117,8 @@ void choose(int k, Texture2D texture)
         return Devinfo(texture);
     }else if(k==9){
         return win(texture);
+    }else if(k==11){
+        return easter(texture);
     }
 }
 //****************
@@ -281,7 +291,7 @@ int move(int dicetemp, struct ship *ship, int arr[],bool *card ,Sound beep)
                 corrider(&ship->x, &ship->y);
                 else *card=false;
             }
-            if (ship->x == 5 && ship->y == 5)
+            if (ship->x == 4 && ship->y == 4)
                 ship->win = true;
             return 1;
         }
@@ -340,8 +350,10 @@ int main()
     SetExitKey(KEY_NULL);
 
     // Images ***************************************************
+    
     // Safhe ha
-    Texture2D Screan[10];
+    Texture2D Screan[12];
+    Screan[11]=LoadTexture("resources/Easteregg.png");
     //winpage
     Screan[9]=LoadTexture("resources/win.png");
     // closemenu
@@ -382,12 +394,13 @@ int main()
     Music game = LoadMusicStream("resources/gamemusic.mp3");
     Sound beep = LoadSound("resources/beep.wav");
     Sound fall = LoadSound("resources/fall.wav");
+    Sound easter=LoadSound("resources/Hacked.wav");
     //******************************************************
 
     while (!windowsclose)
     {
 
-        if ((IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()) && k != 6 && k != 2 && k!=9)
+        if ((IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()) && k != 6 && k != 2 && k!=9 && k!=11)
         { // khoroj az safhe
             exitwindowsreq = true;
         }
@@ -398,13 +411,22 @@ int main()
         if(k==9 && (IsKeyPressed(KEY_ENTER) ||IsKeyPressed(KEY_ESCAPE))){
             k=1;
         }
+        if(k==11 && IsKeyPressed(KEY_A)){
+            k=1;
+        }
         // MENU BAZI LOGIC
         if (k == 1)
         {
+            if(IsKeyPressed(KEY_S)){
+                k=11;
+                framecounter =0;
+                PlaySound(easter);
+            }
             mouse.x = GetMouseX();
             mouse.y = GetMouseY();
             if (923 <= mouse.x && mouse.x <= 1206)
             {
+
                 if (260 <= mouse.y && mouse.y <= 330 && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
                 { // singleplayer
                     k = 10;
@@ -447,7 +469,6 @@ int main()
         }
         //*****************************************
         BeginDrawing();
-
         if (exitwindowsreq && k != 5)
         {
             Exit(Screan[8]);
@@ -504,13 +525,13 @@ int main()
         }else if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && 482<=mouse.x && mouse.x<=652 && 273<=mouse.y && mouse.y<=320){
 //Game data reset *******************************************************************************************
         PlaySound(select);
-        player1.ship1.x = player1.ship2.x = 8;
-        player1.ship1.y = player1.ship2.y = 0;
+        player1.ship1.x = player1.ship2.x = 4;
+        player1.ship1.y = player1.ship2.y = 3;
         player1.ship1.play = true;
         player1.ship2.play = true;
         player1.ship1.win = player1.ship2.win = false;
-        player1.cards[0] = player1.cards[1] = player1.cards[2] = player1.cards[3] = 0;
-
+        player1.cards[0] = player1.cards[2] = player1.cards[3] = 0;
+        player1.cards[1]=999;
         player1.ship1.play = player2.ship1.play = player2.ship2.play = player1.ship2.play = true;
         player1.close=player2.close=false;
 
@@ -647,7 +668,7 @@ int main()
                 }
 
 
-                if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship1.y + 77) && (456 + 77 * player1.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship1.x + 77) && (20 + 77 * player1.ship1.x) <= mouse.y) && !roll && player1.ship1.play) || (!player1.ship2.play && !player1.ship2.win))&& !card) && !(player1.ship1.win))
+                if ((((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship1.y + 77) && (456 + 77 * player1.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship1.x + 77) && (20 + 77 * player1.ship1.x) <= mouse.y) && !roll && player1.ship1.play) || (!player1.ship2.play && !player1.ship2.win))&& !card)) && !player1.ship1.win)
                 {
                     if (move(dicetemp, &player1.ship1, player1.cards,&player1.close,beep))
                     {
@@ -657,7 +678,7 @@ int main()
                         player1.ship2.play = true;
                     }
                 }
-                else if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship2.y + 77) && (456 + 77 * player1.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship2.x + 77) && (20 + 77 * player1.ship2.x) <= mouse.y) && !roll && player1.ship2.play) || (!player1.ship1.play && !player1.ship1.win))) && !(player1.ship2.win))
+                else if ((((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship2.y + 77) && (456 + 77 * player1.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship2.x + 77) && (20 + 77 * player1.ship2.x) <= mouse.y) && !roll && player1.ship2.play) || (!player1.ship1.play && !player1.ship1.win))&& !card)) && !player1.ship2.win)
                 {
                     if (move(dicetemp, &player1.ship2, player1.cards,&player1.close,beep))
                     {
@@ -705,7 +726,7 @@ int main()
                     player2.ship2.play=false;
                 }
                 
-                if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && !roll && player2.ship1.play) || (!player2.ship2.play && !player2.ship2.win)) && !card) && !(player2.ship1.win))
+                if ((((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && !roll && player2.ship1.play) || (!player2.ship2.play && !player2.ship2.win)) && !card)) && !player2.ship1.win)
                 {
                     if (move(dicetemp, &player2.ship1, player2.cards,&player2.close,beep))
                     {
@@ -715,14 +736,14 @@ int main()
                         player2.ship2.play = true;
                     }
                 }
-                else if (((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship2.y + 77) && (456 + 77 * player2.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship2.x + 77) && (20 + 77 * player2.ship2.x) <= mouse.y) && !roll && player2.ship2.play) || (!player2.ship1.play && !player2.ship1.win))&& !card) && !(player2.ship2.win))
+                else if ((((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship2.y + 77) && (456 + 77 * player2.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship2.x + 77) && (20 + 77 * player2.ship2.x) <= mouse.y) && !roll && player2.ship2.play) || (!player2.ship1.play && !player2.ship1.win))&& !card)) && !player2.ship2.win)
                 {
                     if (move(dicetemp, &player2.ship2, player2.cards,&player2.close,beep))
                     {
                         hitcheck(player2.ship2, &player1.ship1, &player1.ship2, fall);
                         turn++;
                         roll = true;
-                        player2.ship2.play = true;
+                        player2.ship1.play = true;
                     }
                 }
                 if (!player2.ship1.play && !player2.ship2.play)
@@ -793,6 +814,7 @@ int main()
     UnloadSound(fall);
     UnloadTexture(num1);
     UnloadTexture(num2);
+    UnloadTexture(Screan[11]);
     CloseAudioDevice();
     CloseWindow();
 }
