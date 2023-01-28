@@ -9,6 +9,7 @@
 		"**/*.exe": true,
 	},
 	"files.associations": {
-		"*.m": "c"
+		"*.m": "c",
+		"cstdio": "c"
 	}
 }

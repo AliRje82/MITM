@@ -16,6 +16,7 @@ bool player1w;
 int framecounter;
 const char hacked[15]="You Are Hacked";
 int cardtemp;
+int crack;
 //**********************
 // Structs***********************
 struct ship
@@ -95,7 +96,18 @@ void easter(Texture2D texture){
     DrawText(TextSubtext(hacked,0,framecounter/20),431,156,60,RED);
     framecounter++;
 }
+char str[10];
+void Lock(int a){
+    itoa(a,str,10);
+    for(int i=0;str[i];i++)
+        str[i]+=crack;
+}
 
+int unlock(char lock[]){
+    for(int i=0;lock[i];i++)
+        lock[i]-=crack;
+    return atoi(str);
+}
 void choose(int k, Texture2D texture)
 {
     if (k == 0)
@@ -505,33 +517,91 @@ int main()
         int turn;
         bool roll;
         bool card;
+        int tf;
         
 //Load Game
         mouse.x=GetMouseX();
         mouse.y=GetMouseY();
-        FILE *Load;
-        Load=fopen("save//save.dat","rb");
-        if(Load && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && 670<=mouse.x && mouse.x<=840 && 273<=mouse.y && mouse.y<=320 ){
+        FILE *save;
+        save=fopen("save//save.txt","r");
+        if(save && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && 670<=mouse.x && mouse.x<=840 && 273<=mouse.y && mouse.y<=320 ){
         PlaySound(select);
-        fread(&player1,sizeof(struct player),1,Load);
-        fread(&player2,sizeof(struct player),1,Load);
-        fread(&turn,sizeof(int),1,Load);
-        fread(&dicetemp,sizeof(int),1,Load);
-        fread(&roll,sizeof(bool),1,Load);
-        fread(&card,sizeof(bool),1,Load);
-        fread(&cardtemp,sizeof(int),1,Load);
+        FILE *cracked;
+        cracked=fopen("save//crack.dat","rb");
+        fread(&crack,1,sizeof(int),cracked);
+        fclose(cracked);
+        //player 1 save
+        for(int l=0;l<4;l++){
+        fscanf(save,"%s",str);
+        player1.cards[l]=unlock(str);
+        }
+        fscanf(save,"%s",str);
+        player1.ship1.x=unlock(str);
+        fscanf(save,"%s",str);
+        player1.ship1.y=unlock(str);
+        fscanf(save,"%s",str);
+        player1.ship2.x=unlock(str);
+        fscanf(save,"%s",str);
+        player1.ship2.y=unlock(str);
+        fscanf(save,"%s",str);
+        player1.ship1.play=unlock(str);
+        fscanf(save,"%s",str);
+        player1.ship1.win=unlock(str);
+        fscanf(save,"%s",str);
+        player1.ship2.play=unlock(str);
+        fscanf(save,"%s",str);
+        player1.ship2.win=unlock(str);
+        fscanf(save,"%s",str);
+        player2.close=unlock(str);
+
+
+        for(int l=0;l<4;l++){
+        fscanf(save,"%s",str);
+        player2.cards[l]=unlock(str);
+        }
+        fscanf(save,"%s",str);
+        player2.ship1.x=unlock(str);
+        fscanf(save,"%s",str);
+        player2.ship1.y=unlock(str);
+        fscanf(save,"%s",str);
+        player2.ship2.x=unlock(str);
+        fscanf(save,"%s",str);
+        player2.ship2.y=unlock(str);
+        fscanf(save,"%s",str);
+        player2.ship1.play=unlock(str);
+        fscanf(save,"%s",str);
+        player2.ship1.win=unlock(str);
+        fscanf(save,"%s",str);
+        player2.ship2.play=unlock(str);
+        fscanf(save,"%s",str);
+        player2.ship2.win=unlock(str);
+        fscanf(save,"%s",str);
+        player2.close=unlock(str);
+        
+        fscanf(save,"%s",str);
+        turn=unlock(str);
+        fscanf(save,"%s",str);
+        dicetemp=unlock(str);
+        fscanf(save,"%s",str);
+        cardtemp=unlock(str);
+        fscanf(save,"%s",str);
+        roll=unlock(str);
+        fscanf(save,"%s",str);
+        card=unlock(str);
+
+
         k=5;
         musictime = 1.0f;
         }else if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && 482<=mouse.x && mouse.x<=652 && 273<=mouse.y && mouse.y<=320){
 //Game data reset *******************************************************************************************
         PlaySound(select);
-        player1.ship1.x = player1.ship2.x = 4;
-        player1.ship1.y = player1.ship2.y = 3;
+        player1.ship1.x = player1.ship2.x = 8;
+        player1.ship1.y = player1.ship2.y = 0;
         player1.ship1.play = true;
         player1.ship2.play = true;
         player1.ship1.win = player1.ship2.win = false;
-        player1.cards[0] = player1.cards[2] = player1.cards[3] = 0;
-        player1.cards[1]=999;
+        player1.cards[0] =player1.cards[1] =player1.cards[2] = player1.cards[3] = 0;
+        
         player1.ship1.play = player2.ship1.play = player2.ship2.play = player1.ship2.play = true;
         player1.close=player2.close=false;
 
@@ -775,14 +845,95 @@ int main()
                 {
                     //save game
                     FILE *save;
-                    save=fopen("save//save.dat","wb");
-                    fwrite(&player1,sizeof(struct player),1,save);
-                    fwrite(&player2,sizeof(struct player),1,save);
-                    fwrite(&turn,sizeof(int),1,save);
-                    fwrite(&dicetemp,sizeof(int),1,save);
-                    fwrite(&roll,sizeof(bool),1,save);
-                    fwrite(&card,sizeof(bool),1,save);
-                    fwrite(&cardtemp,sizeof(int),1,save);
+                    save=fopen("save//save.txt","w");
+                    FILE *cracked;
+                    cracked=fopen("save//crack.dat","wb");
+                    crack=rand()%91+10;
+                    fwrite(&crack,1,sizeof(int),cracked);
+                    fclose(cracked);
+                    //player 1 save text
+                    for(int l=0;l<4;l++){
+                        Lock(player1.cards[l]);
+                        fprintf(save,"%s\n",str);
+                    }
+                    Lock(player1.ship1.x);
+                    fprintf(save,"%s\n",str);
+                    Lock(player1.ship1.y);
+                    fprintf(save,"%s\n",str);
+                    Lock(player1.ship2.x);
+                    fprintf(save,"%s\n",str);
+                    Lock(player1.ship2.y);
+                    fprintf(save,"%s\n",str);
+                    if(player1.ship1.play) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+                    if(player1.ship1.win) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+                    if(player1.ship2.play) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+                    if(player1.ship2.win) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+                    if(player1.close) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+
+
+                    for(int l=0;l<4;l++){
+                        Lock(player2.cards[l]);
+                        fprintf(save,"%s\n",str);
+                    }
+                    Lock(player2.ship1.x);
+                    fprintf(save,"%s\n",str);
+                    Lock(player2.ship1.y);
+                    fprintf(save,"%s\n",str);
+                    Lock(player2.ship2.x);
+                    fprintf(save,"%s\n",str);
+                    Lock(player2.ship2.y);
+                    fprintf(save,"%s\n",str);
+                    if(player2.ship1.play) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+                    if(player2.ship1.win) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+                    if(player2.ship2.play) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+                    if(player2.ship2.win) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+                    if(player2.close) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+
+                    Lock(turn);
+                    fprintf(save,"%s\n",str);
+                    Lock(dicetemp);
+                    fprintf(save,"%s\n",str);
+                    Lock(cardtemp);
+                    fprintf(save,"%s\n",str);
+                    if(roll) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+                    if(card) tf=1;
+                    else tf=0;
+                    Lock(tf);
+                    fprintf(save,"%s\n",str);
+
                     fclose(save);
                     exitwindowsreq = false;
                     k = 1;
