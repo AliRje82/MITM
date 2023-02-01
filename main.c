@@ -180,10 +180,12 @@ int roll_dice()
         return temp;
     }
 }
-int chancecard(int arr[])
+int chancecard(int arr[],Sound chance)
 {
+    PlaySound(chance);
     int card = rand() % 4;
     arr[card]++;
+    
     return card;
 }
 void corrider(int *x, int *y)
@@ -262,7 +264,7 @@ void corrider(int *x, int *y)
         }
     }
 }
-int move(int dicetemp, struct ship *ship, int arr[],bool *card ,Sound beep)
+int move(int dicetemp, struct ship *ship, int arr[],bool *card ,Sound beep,Sound chance)
 {
     if (!(ship->x == 8 && ship->y + dicetemp < 0))
     {
@@ -297,7 +299,7 @@ int move(int dicetemp, struct ship *ship, int arr[],bool *card ,Sound beep)
                 }
             }
             if (board[ship->x][ship->y] == 1)
-                cardtemp=chancecard(arr);
+                cardtemp=chancecard(arr,chance);
             if (board[ship->x][ship->y] == 2){
                 if(!*card)
                 corrider(&ship->x, &ship->y);
@@ -407,8 +409,9 @@ int main()
     Sound beep = LoadSound("resources/beep.wav");
     Sound fall = LoadSound("resources/fall.wav");
     Sound easter=LoadSound("resources/Hacked.wav");
+    Sound chance=LoadSound("resources/chance.wav");
+    Music men=LoadMusicStream("resources/Menuu.mp3");
     //******************************************************
-
     while (!windowsclose)
     {
 
@@ -419,6 +422,7 @@ int main()
         if (IsKeyPressed(KEY_ENTER) && k == 0)
         { // rad shodan safhe hayi ke ba enter rad mishavand
             k++;
+            PlayMusicStream(men);
         }
         if(k==9 && (IsKeyPressed(KEY_ENTER) ||IsKeyPressed(KEY_ESCAPE))){
             k=1;
@@ -429,6 +433,11 @@ int main()
         // MENU BAZI LOGIC
         if (k == 1)
         {
+            UpdateMusicStream(men);
+            
+            if(GetMusicTimePlayed(men)/GetMusicTimeLength(men)==1){
+                PlayMusicStream(men);
+            }
             if(IsKeyPressed(KEY_S)){
                 k=11;
                 framecounter =0;
@@ -740,7 +749,7 @@ int main()
 
                 if ((((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship1.y + 77) && (456 + 77 * player1.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship1.x + 77) && (20 + 77 * player1.ship1.x) <= mouse.y) && !roll && player1.ship1.play) || (!player1.ship2.play && !player1.ship2.win))&& !card)) && !player1.ship1.win)
                 {
-                    if (move(dicetemp, &player1.ship1, player1.cards,&player1.close,beep))
+                    if (move(dicetemp, &player1.ship1, player1.cards,&player1.close,beep,chance))
                     {
                         hitcheck(player1.ship1, &player2.ship1, &player2.ship2, fall);
                         turn++;
@@ -750,7 +759,7 @@ int main()
                 }
                 else if ((((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player1.ship2.y + 77) && (456 + 77 * player1.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player1.ship2.x + 77) && (20 + 77 * player1.ship2.x) <= mouse.y) && !roll && player1.ship2.play) || (!player1.ship1.play && !player1.ship1.win))&& !card)) && !player1.ship2.win)
                 {
-                    if (move(dicetemp, &player1.ship2, player1.cards,&player1.close,beep))
+                    if (move(dicetemp, &player1.ship2, player1.cards,&player1.close,beep,chance))
                     {
                         hitcheck(player1.ship2, &player2.ship1, &player2.ship2, fall);
                         turn++;
@@ -798,7 +807,7 @@ int main()
                 
                 if ((((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship1.y + 77) && (456 + 77 * player2.ship1.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship1.x + 77) && (20 + 77 * player2.ship1.x) <= mouse.y) && !roll && player2.ship1.play) || (!player2.ship2.play && !player2.ship2.win)) && !card)) && !player2.ship1.win)
                 {
-                    if (move(dicetemp, &player2.ship1, player2.cards,&player2.close,beep))
+                    if (move(dicetemp, &player2.ship1, player2.cards,&player2.close,beep,chance))
                     {
                         hitcheck(player2.ship1, &player1.ship1, &player1.ship2, fall);
                         turn++;
@@ -808,7 +817,7 @@ int main()
                 }
                 else if ((((((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mouse.x <= (456 + 77 * player2.ship2.y + 77) && (456 + 77 * player2.ship2.y) <= mouse.x && mouse.y <= (20 + 77 * player2.ship2.x + 77) && (20 + 77 * player2.ship2.x) <= mouse.y) && !roll && player2.ship2.play) || (!player2.ship1.play && !player2.ship1.win))&& !card)) && !player2.ship2.win)
                 {
-                    if (move(dicetemp, &player2.ship2, player2.cards,&player2.close,beep))
+                    if (move(dicetemp, &player2.ship2, player2.cards,&player2.close,beep,chance))
                     {
                         hitcheck(player2.ship2, &player1.ship1, &player1.ship2, fall);
                         turn++;
@@ -966,6 +975,8 @@ int main()
     UnloadTexture(num1);
     UnloadTexture(num2);
     UnloadTexture(Screan[11]);
+    UnloadMusicStream(men);
+    UnloadSound(chance);
     CloseAudioDevice();
     CloseWindow();
 }
